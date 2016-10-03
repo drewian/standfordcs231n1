@@ -4,8 +4,12 @@ from cs231n.classifiers.softmax import *
 
 class LinearClassifier(object):
 
+
   def __init__(self):
     self.W = None
+
+  def accuracy(self, pred, ground):
+    return np.count_nonzero(np.equal(pred, ground) == True) / float(len(pred))
 
   def train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=100,
             batch_size=200, verbose=False):
@@ -65,13 +69,14 @@ class LinearClassifier(object):
       # TODO:                                                                 #
       # Update the weights using the gradient and the learning rate.          #
       #########################################################################
-      W += learning_rate * grad
+      self.W -= learning_rate * grad
       #########################################################################
       #                       END OF YOUR CODE                                #
       #########################################################################
 
       if verbose and it % 100 == 0:
         print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
+    self.W /= num_iters
 
     return loss_history
 
@@ -93,7 +98,9 @@ class LinearClassifier(object):
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    y_pred = np.argmax(np.dot(X, W), axis=1)
+    exp_sums = np.exp(X.dot(self.W))
+    scores = exp_sums / exp_sums.sum(axis=1, keepdims=True)
+    y_pred = np.argmax(scores, axis=1)
     ###########################################################################
     #                           END OF YOUR CODE                              #
     ###########################################################################
