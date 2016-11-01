@@ -11,7 +11,7 @@ class LinearClassifier(object):
   def accuracy(self, pred, ground):
     return np.count_nonzero(np.equal(pred, ground) == True) / float(len(pred))
 
-  def train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=100,
+  def train(self, X, y, learning_rate=1e-3, reg=1e-5, num_iters=1000,
             batch_size=200, verbose=False):
     """
     Train this linear classifier using stochastic gradient descent.
@@ -76,7 +76,7 @@ class LinearClassifier(object):
 
       if verbose and it % 100 == 0:
         print 'iteration %d / %d: loss %f' % (it, num_iters, loss)
-    self.W /= num_iters
+    # self.W /= num_iters
 
     return loss_history
 
@@ -98,8 +98,9 @@ class LinearClassifier(object):
     # TODO:                                                                   #
     # Implement this method. Store the predicted labels in y_pred.            #
     ###########################################################################
-    exp_sums = np.exp(X.dot(self.W))
-    scores = exp_sums / exp_sums.sum(axis=1, keepdims=True)
+    #exp_sums = np.exp(X.dot(self.W))
+    #scores = exp_sums / exp_sums.sum(axis=1, keepdims=True)
+    scores = X.dot(self.W)
     y_pred = np.argmax(scores, axis=1)
     ###########################################################################
     #                           END OF YOUR CODE                              #

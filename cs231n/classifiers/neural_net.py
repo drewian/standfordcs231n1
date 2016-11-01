@@ -74,7 +74,12 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    a1 = W1.T.dot(X.T) + b1.reshape(b1.shape[0], 1)
+    a1[a1 < 0] = 0
+    scores = a1.T.dot(W2) + b2
+    # a2[a2 < 0] = 0
+    # scores = np.exp(a2) / np.exp(a2).sum(axis=1, keepdims=True)
+    #print a1.shape, a2.shape, W1.shape, W2.shape, X.shape
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -92,13 +97,33 @@ class TwoLayerNet(object):
     # classifier loss. So that your results match ours, multiply the            #
     # regularization loss by 0.5                                                #
     #############################################################################
-    pass
+    scores_exp = np.exp(scores) / np.exp(scores).sum(axis=1, keepdims=True)
+    loss = 1.0 / N *  (-np.log(scores_exp[range(N), y])).sum()
+    loss += 0.5 * reg * ((W1 ** 2).sum() + (W2 ** 2).sum())
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
-
+    
     # Backward pass: compute gradients
     grads = {}
+#    print a1.shape
+#    print W2.shape
+#    print scores_exp.shape
+    # scores_exp[:, :] = 0
+    # scores_backup = scores_exp
+    scores_exp[range(X.shape[0]), y] -= 1
+    scores_exp /= float(N)
+    grads["W2"] = a1.dot(scores_exp)
+    grads["W2"] += reg * W2 
+    # print grads["W2"].shape
+    grads["b2"] = np.sum(scores_exp, axis=0)
+    
+    vec_over_a = W2.dot(scores_exp.T)
+    vec_over_a[a1 == 0] = 0
+
+    # grads["b2"][y] = 1
+    grads["W1"] = X.T.dot(vec_over_a.T) + reg * W1
+    grads["b1"] = vec_over_a.sum(axis=1)
     #############################################################################
     # TODO: Compute the backward pass, computing the derivatives of the weights #
     # and biases. Store the results in the grads dictionary. For example,       #
@@ -148,7 +173,9 @@ class TwoLayerNet(object):
       # TODO: Create a random minibatch of training data and labels, storing  #
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
-      pass
+      indices = np.random.choice(X.shape[0], size=batch_size)
+      X_batch = X[indices]
+      y_batch = y[indices]
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -163,7 +190,10 @@ class TwoLayerNet(object):
       # using stochastic gradient descent. You'll need to use the gradients   #
       # stored in the grads dictionary defined above.                         #
       #########################################################################
-      pass
+      self.params["W2"] -= learning_rate * grads["W2"] 
+      self.params["W1"] -= learning_rate * grads["W1"] 
+      self.params["b2"] -= learning_rate * grads["b2"] 
+      self.params["b1"] -= learning_rate * grads["b1"] 
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -208,7 +238,10 @@ class TwoLayerNet(object):
     ###########################################################################
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
-    pass
+    l1 = X.dot(self.params["W1"]) + self.params["b1"]
+    l1[l1 < 0] = 0
+    l2 = l1.dot(self.params["W2"]) + self.params["b2"]
+    y_pred = np.argmax(l2, axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################

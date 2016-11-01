@@ -96,7 +96,6 @@ def svm_loss_vectorized(W, X, y, reg):
   # to reuse some of the intermediate values that you used to compute the     #
   # loss.                                                                     #
   #############################################################################
-  # NxD NxC
   field[range(num_samples), y] = -field.sum(axis=1) + 1
   dW = X.T.dot(field) / num_samples
   #############################################################################
